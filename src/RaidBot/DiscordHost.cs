@@ -59,6 +59,8 @@ internal class DiscordHost : IHostedService
         {
             try
             {
+                var today = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, _serviceProvider.GetRequiredService<TimeZoneInfo>()).Date;
+
                 foreach (var guild in await _discord.Rest.GetGuildsAsync(true))
                 {
                     var options = await _eventPersistence.LoadAsync<GuildOptions>(guild.Id);
@@ -77,6 +79,21 @@ internal class DiscordHost : IHostedService
                             }
                             else
                             {
+                                if (raidContent is not null)
+                                {
+                                    if (raidContent.Date.Date == today)
+                                    {
+                                        if (!channel.Name.StartsWith("⭐"))
+                                        {
+                                            await channel.ModifyAsync(c => c.Name = "⭐" + channel.Name);
+                                        }
+                                    }
+                                    else if (channel.Name.StartsWith("⭐"))
+                                    {
+                                        await channel.ModifyAsync(c => c.Name = channel.Name[1..]);
+                                    }
+                                }
+
                                 eventChannels.Add((raidContent, channel));
                             }
                         }

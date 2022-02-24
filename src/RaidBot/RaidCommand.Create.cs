@@ -72,8 +72,10 @@ public partial class RaidCommand
                 }
             }
 
+            bool isToday = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, _timeZone).Date == dateTimeOffset.Date;
+
             var channel = await Context.Guild.CreateTextChannelAsync(
-                $"{date:MMM-dd}-{name.Replace(' ', '-')}",
+                $"{(isToday ? "⭐" : "")}{date:MMM-dd}-{name.Replace(' ', '-')}",
                 c =>
                 {
                     var overwrites = new List<Overwrite>();
