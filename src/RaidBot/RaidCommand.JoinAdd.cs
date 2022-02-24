@@ -37,7 +37,8 @@ public partial class RaidCommand
     [SlashCommand("join", "Joins a raid signup.")]
     public async Task JoinAsync(
         [Summary("class", "The class of your character.")] PlayerClass playerClass,
-        [Summary("role", "The role you will be performing.")] PlayerRole playerRole)
+        [Summary("role", "The role you will be performing.")] PlayerRole playerRole,
+        [Summary("name", "The optional character name.")] string? name = null)
     {
         await Context.Interaction.DeferAsync(true);
         _commandQueue.Queue(async () =>
@@ -45,7 +46,7 @@ public partial class RaidCommand
             if (await GetDeclarationAsync() is { } declarationMessage &&
                 await ReadContentAsync() is { } raidContent)
             {
-                await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, Context.User, null);
+                await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, Context.User, name);
             }
             else
             {
@@ -69,7 +70,7 @@ public partial class RaidCommand
                     .WithCustomId("raidjoin_respond")
                     .AddTextInput("Role", "raidjoin_role", placeholder: "tank, healer, caster, melee", maxLength: 10, required: true, value: current?.PlayerRole.ToString())
                     .AddTextInput("Class", "raidjoin_class", placeholder: "druid, hunter, mage, etc...", maxLength: 12, required: true, value: current?.PlayerClass.ToString())
-                    .AddTextInput("Character Name (optional)", "raidjoin_name", maxLength: 16, required: false, value: current?.Name)
+                    .AddTextInput("Character Name (optional)", "raidjoin_name", maxLength: 12, required: false, value: current?.Name)
                     .Build());
             }
             else
