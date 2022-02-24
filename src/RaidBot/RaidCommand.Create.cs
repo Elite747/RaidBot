@@ -98,6 +98,7 @@ public partial class RaidCommand
             "\nAdd users manually by typing `/raid add @user` in your new channel." +
             "\n... or remove them by typing `/raid kick @user`." +
             "\nBe sure to type up a description with your loot rules!" +
+            "\nIf you need to change the name, date or time of your raid, use `/raid update`." +
             "\nWhen the raid is over, be sure to delete it with `/raid delete`!";
 
             await RespondSilentAsync(message);
