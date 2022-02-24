@@ -9,7 +9,8 @@ public partial class RaidCommand
     public async Task AddAsync(
         [Summary("user", "The discord user of this character.")] IUser user,
         [Summary("class", "The class of the character.")] PlayerClass playerClass,
-        [Summary("role", "The role they will be performing.")] PlayerRole playerRole)
+        [Summary("role", "The role they will be performing.")] PlayerRole playerRole,
+        [Summary("name", "The optional character name.")] string? name = null)
     {
         await Context.Interaction.DeferAsync(true);
         _commandQueue.Queue(async () =>
@@ -19,7 +20,7 @@ public partial class RaidCommand
             {
                 if (Context.User.Id == raidContent.OwnerId)
                 {
-                    await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, user.Id);
+                    await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, user, name);
                 }
                 else
                 {
@@ -44,7 +45,67 @@ public partial class RaidCommand
             if (await GetDeclarationAsync() is { } declarationMessage &&
                 await ReadContentAsync() is { } raidContent)
             {
-                await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, Context.User.Id);
+                await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, Context.User, null);
+            }
+            else
+            {
+                await RespondSilentAsync("This channel is not a raid channel.");
+            }
+        });
+    }
+
+    [ComponentInteraction("raidjoin", ignoreGroupNames: true)]
+    public Task JoinClick2Async()
+    {
+        _commandQueue.Queue(async () =>
+        {
+            if (await GetDeclarationAsync() is { } declarationMessage &&
+            await ReadContentAsync() is { } raidContent)
+            {
+                var current = raidContent.Members.Find(m => m.OwnerId == Context.User.Id);
+
+                await RespondWithModalAsync(new ModalBuilder()
+                    .WithTitle("Join Raid")
+                    .WithCustomId("raidjoin_respond")
+                    .AddTextInput("Role", "raidjoin_role", placeholder: "tank, healer, caster, melee", maxLength: 10, required: true, value: current?.PlayerRole.ToString())
+                    .AddTextInput("Class", "raidjoin_class", placeholder: "druid, hunter, mage, etc...", maxLength: 12, required: true, value: current?.PlayerClass.ToString())
+                    .AddTextInput("Character Name (optional)", "raidjoin_name", maxLength: 16, required: false, value: current?.Name)
+                    .Build());
+            }
+            else
+            {
+                await RespondSilentAsync("This channel is not a raid channel.");
+            }
+        });
+        return Task.CompletedTask;
+    }
+
+    [ModalInteraction("raidjoin_respond", ignoreGroupNames: true)]
+    public async Task JoinRespondAsync(JoinModal modal)
+    {
+        string? name = modal.Name;
+        PlayerClass? playerClass = TryParseClass(modal.Class);
+        PlayerRole? playerRole = TryParseRole(modal.Role);
+
+        if (!playerClass.HasValue)
+        {
+            await RespondSilentAsync($"{Context.User.Mention} Class is not valid.");
+            return;
+        }
+
+        if (!playerRole.HasValue)
+        {
+            await RespondSilentAsync($"{Context.User.Mention} Role is not valid.");
+            return;
+        }
+
+        await Context.Interaction.DeferAsync(true);
+        _commandQueue.Queue(async () =>
+        {
+            if (await GetDeclarationAsync() is { } declarationMessage &&
+            await ReadContentAsync() is { } raidContent)
+            {
+                await AddInternalAsync(declarationMessage, raidContent, playerClass.Value, playerRole.Value, Context.User, name);
             }
             else
             {
@@ -90,7 +151,7 @@ public partial class RaidCommand
             if (await GetDeclarationAsync() is { } declarationMessage &&
                 await ReadContentAsync() is { } raidContent)
             {
-                await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, Context.User.Id);
+                await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, Context.User, null);
             }
             else
             {
@@ -104,28 +165,94 @@ public partial class RaidCommand
         RaidContent raidContent,
         PlayerClass playerClass,
         PlayerRole playerRole,
-        ulong userId)
+        IUser user,
+        string? name)
     {
-        var existing = raidContent.Members.Find(m => m.OwnerId == userId);
+        var existing = raidContent.Members.Find(m => m.OwnerId == user.Id);
 
         if (existing is not null)
         {
             existing.PlayerClass = playerClass;
             existing.PlayerRole = playerRole;
-            raidContent.Members.RemoveAll(m => m != existing && m.OwnerId == userId);
+            existing.Name = name;
+            existing.OwnerName = (user as IGuildUser)?.DisplayName ?? user.Username;
+            raidContent.Members.RemoveAll(m => m != existing && m.OwnerId == user.Id);
         }
         else
         {
-            raidContent.Members.Add(new(playerClass, playerRole, userId));
+            raidContent.Members.Add(new()
+            {
+                Name = name,
+                OwnerId = user.Id,
+                OwnerName = (user as IGuildUser)?.DisplayName ?? user.Username,
+                PlayerClass = playerClass,
+                PlayerRole = playerRole
+            });
         }
 
         await SaveAsync(Context.Channel, raidContent, declarationMessage.Id);
 
-        string message = $"{FindRawEmote(playerClass)} <@!{userId}> {(existing is not null ? "updated." : "added.")}";
+        string message = $"{FindRawEmote(playerClass)} {user.Mention} {(existing is not null ? "updated." : "added.")}";
 
         if (Context.Interaction.Type != InteractionType.MessageComponent)
         {
             await RespondSilentAsync(message);
         }
+    }
+
+    private static PlayerClass? TryParseClass(string? input)
+    {
+        if (input?.Length > 0 && _classLookup.TryGetValue(input.Trim(), out var playerClass))
+        {
+            return playerClass;
+        }
+        return null;
+    }
+
+    private static PlayerRole? TryParseRole(string? input)
+    {
+        if (input?.Length > 0 && _roleLookup.TryGetValue(input.Trim(), out var playerRole))
+        {
+            return playerRole;
+        }
+        return null;
+    }
+
+    private static readonly IReadOnlyDictionary<string, PlayerClass> _classLookup = BuildClassLookup();
+
+    private static readonly IReadOnlyDictionary<string, PlayerRole> _roleLookup = BuildRoleLookup();
+
+    private static Dictionary<string, PlayerClass> BuildClassLookup()
+    {
+        var lookup = new Dictionary<string, PlayerClass>(StringComparer.CurrentCultureIgnoreCase);
+
+        foreach (var value in Enum.GetValues<PlayerClass>())
+        {
+            lookup[value.ToString()] = value;
+        }
+
+        lookup["huntard"] = PlayerClass.Hunter;
+        lookup["pally"] = lookup["pala"] = PlayerClass.Paladin;
+        lookup["rouge"] = PlayerClass.Rogue;
+        lookup["shammy"] = lookup["sham"] = PlayerClass.Shaman;
+        lookup["lock"] = PlayerClass.Warlock;
+        lookup["warr"] = PlayerClass.Warrior;
+
+        return lookup;
+    }
+
+    private static Dictionary<string, PlayerRole> BuildRoleLookup()
+    {
+        var lookup = new Dictionary<string, PlayerRole>(StringComparer.CurrentCultureIgnoreCase);
+
+        foreach (var value in Enum.GetValues<PlayerRole>())
+        {
+            lookup[value.ToString()] = value;
+        }
+
+        lookup["caster"] = lookup["range"] = PlayerRole.Ranged;
+        lookup["heals"] = lookup["heal"] = PlayerRole.Healer;
+
+        return lookup;
     }
 }

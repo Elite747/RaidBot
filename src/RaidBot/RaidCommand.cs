@@ -81,6 +81,19 @@ public partial class RaidCommand : InteractionModuleBase
 
     private async Task SaveAsync(IMessageChannel channel, RaidContent raidContent, ulong messageId)
     {
+        foreach (var member in raidContent.Members)
+        {
+            if (string.IsNullOrEmpty(member.OwnerName))
+            {
+                var user = await Context.Guild.GetUserAsync(member.OwnerId);
+
+                if (user is not null)
+                {
+                    member.OwnerName = user.DisplayName;
+                }
+            }
+        }
+
         await _persistence.SaveAsync(channel.Id, raidContent);
 
         if (messageId > 0)
@@ -121,13 +134,10 @@ public partial class RaidCommand : InteractionModuleBase
         return $"**{raidContent.Name}**\n*created by* <@!{raidContent.OwnerId}>";
     }
 
-    private MessageComponent MakeMessageComponents()
+    private static MessageComponent MakeMessageComponents()
     {
         return new ComponentBuilder()
-            .WithButton("Join As Tank", $"raidjoin:{PlayerRole.Tank}", ButtonStyle.Primary, emote: GetEmote(PlayerRole.Tank))
-            .WithButton("Join As Healer", $"raidjoin:{PlayerRole.Healer}", ButtonStyle.Primary, emote: GetEmote(PlayerRole.Healer))
-            .WithButton("Join As Melee DPS", $"raidjoin:{PlayerRole.Melee}", ButtonStyle.Primary, emote: GetEmote(PlayerRole.Melee))
-            .WithButton("Join As Ranged DPS", $"raidjoin:{PlayerRole.Ranged}", ButtonStyle.Primary, emote: GetEmote(PlayerRole.Ranged))
+            .WithButton("Join or Update", "raidjoin", ButtonStyle.Primary)
             .WithButton("Leave", "raidleave", ButtonStyle.Danger)
             .Build();
     }
@@ -154,9 +164,36 @@ public partial class RaidCommand : InteractionModuleBase
                 .Append(raidContent.Members.IndexOf(member) + 1)
                 .Append("` ")
                 .Append(FindRawEmote(member.PlayerClass))
-                .Append(" <@!")
-                .Append(member.OwnerId)
-                .Append('>');
+                .Append(' ');
+
+            bool hasName = member.Name?.Length > 0;
+
+            if (hasName)
+            {
+                sb.Append(member.Name).Append(" (");
+            }
+
+            if (member.OwnerName?.Length > 0)
+            {
+                if (member.OwnerName.Length < 15)
+                {
+                    sb.Append(member.OwnerName);
+                }
+                else
+                {
+                    sb.Append(member.OwnerName.AsSpan()[..12].TrimEnd()).Append("...");
+                }
+            }
+            else
+            {
+                sb.Append("<@!").Append(member.OwnerId).Append('>');
+            }
+
+            if (hasName)
+            {
+                sb.Append(')');
+            }
+
             first = false;
         }
 
