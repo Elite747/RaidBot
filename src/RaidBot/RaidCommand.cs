@@ -117,16 +117,20 @@ public partial class RaidCommand : InteractionModuleBase
 
     private Embed MakeMessageEmbed(RaidContent raidContent)
     {
-        return new EmbedBuilder()
+        var builder = new EmbedBuilder()
             .WithTitle(raidContent.Name)
             .AddField("Date (Server Time)", raidContent.Date.ToString("dddd, MMMM dd, yyyy hh:mm tt"), inline: true)
             .AddField("Date (Local Time)", $"<t:{raidContent.Date.ToUnixTimeSeconds()}:F>", inline: true)
-            .AddField("Total Signups", raidContent.Members.Count.ToString("N0"))
-            .AddField($"{FindRawEmote(PlayerRole.Tank)} Tanks ({raidContent.Members.Count(m => m.PlayerRole == PlayerRole.Tank)})", BuildField(raidContent, PlayerRole.Tank), inline: true)
-            .AddField($"{FindRawEmote(PlayerRole.Healer)} Healers ({raidContent.Members.Count(m => m.PlayerRole == PlayerRole.Healer)})", BuildField(raidContent, PlayerRole.Healer), inline: true)
-            .AddField($"{FindRawEmote(PlayerRole.Melee)} Melee DPS ({raidContent.Members.Count(m => m.PlayerRole == PlayerRole.Melee)})", BuildField(raidContent, PlayerRole.Melee), inline: true)
-            .AddField($"{FindRawEmote(PlayerRole.Ranged)} Ranged DPS ({raidContent.Members.Count(m => m.PlayerRole == PlayerRole.Ranged)})", BuildField(raidContent, PlayerRole.Ranged), inline: true)
-            .Build();
+            .AddField("Total Signups", raidContent.Members.Count.ToString("N0"), inline: false);
+
+        var sb = new StringBuilder();
+
+        AddField(builder, sb, raidContent, "Tanks", PlayerRole.Tank);
+        AddField(builder, sb, raidContent, "Healers", PlayerRole.Healer);
+        AddField(builder, sb, raidContent, "Melee DPS", PlayerRole.Melee);
+        AddField(builder, sb, raidContent, "Ranged DPS", PlayerRole.Ranged);
+
+        return builder.Build();
     }
 
     private static string MakeMessageContent(RaidContent raidContent)
@@ -142,16 +146,19 @@ public partial class RaidCommand : InteractionModuleBase
             .Build();
     }
 
-    private string BuildField(RaidContent raidContent, PlayerRole role)
+    private void AddField(EmbedBuilder builder, StringBuilder sb, RaidContent raidContent, string name, PlayerRole role)
     {
+        var fieldName = $"{FindRawEmote(role)} {name} ({raidContent.Members.Count(m => m.PlayerRole == role)})";
         var roleMembers = raidContent.Members.Where(member => member.PlayerRole == role);
+
         if (!roleMembers.Any())
         {
-            return "none";
+            builder.AddField(fieldName, "none", inline: true);
+            return;
         }
 
-        var sb = new StringBuilder();
         bool first = true;
+        sb.Length = 0;
 
         foreach (var member in roleMembers)
         {
@@ -166,37 +173,41 @@ public partial class RaidCommand : InteractionModuleBase
                 .Append(FindRawEmote(member.PlayerClass))
                 .Append(' ');
 
-            bool hasName = member.Name?.Length > 0;
-
-            if (hasName)
+            if (member.Name?.Length > 0)
             {
-                sb.Append(member.Name).Append(" (");
-            }
+                sb.Append("**").Append(char.ToUpper(member.Name[0]));
 
-            if (member.OwnerName?.Length > 0)
-            {
-                if (member.OwnerName.Length < 15)
+                for (int i = 1; i < member.Name.Length; i++)
                 {
-                    sb.Append(member.OwnerName);
+                    sb.Append(char.ToLower(member.Name[i]));
+                }
+
+                sb.Append("**");
+
+                if (member.OwnerName?.Length > 0)
+                {
+                    if (!member.OwnerName.Contains(member.Name, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        sb.Append(" (").AppendTruncated(member.OwnerName, 15).Append(')');
+                    }
                 }
                 else
                 {
-                    sb.Append(member.OwnerName.AsSpan()[..12].TrimEnd()).Append("...");
+                    sb.Append(" (<@!").Append(member.OwnerId).Append(">)");
                 }
+            }
+            else if (member.OwnerName?.Length > 0)
+            {
+                sb.Append("**").AppendTruncated(member.OwnerName, 15).Append("**");
             }
             else
             {
                 sb.Append("<@!").Append(member.OwnerId).Append('>');
             }
 
-            if (hasName)
-            {
-                sb.Append(')');
-            }
-
             first = false;
         }
 
-        return sb.ToString();
+        builder.AddField(fieldName, sb.ToString(), inline: true);
     }
 }
