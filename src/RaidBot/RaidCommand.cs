@@ -44,6 +44,38 @@ public partial class RaidCommand : InteractionModuleBase
         return null;
     }
 
+    private async Task QueueTaskAsync(Func<Task> task)
+    {
+        await Context.Interaction.DeferAsync(true);
+        _commandQueue.Queue(async () =>
+        {
+            try
+            {
+                await task();
+            }
+            catch
+            {
+                await RespondSilentAsync(":x: Something went wrong...");
+                throw;
+            }
+        });
+    }
+
+    private Task QueueContentTaskAsync(Func<RaidContent, Task> task)
+    {
+        return QueueTaskAsync(async () =>
+        {
+            if (await ReadContentAsync() is { } raidContent)
+            {
+                await task(raidContent);
+            }
+            else
+            {
+                await RespondSilentAsync("This channel is not a raid channel.");
+            }
+        });
+    }
+
     private async Task<RaidContent?> ReadContentAsync()
     {
         return await _persistence.LoadAsync<RaidContent>(Context.Channel.Id);

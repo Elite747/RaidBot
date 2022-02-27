@@ -12,8 +12,34 @@ public partial class RaidCommand
         [Summary("time", "The time of the raid. This value should use the server time.")] string timeString,
         [Summary("hidden", "If true, the signup will be hidden from everyone but you. Default is false.")] bool hidden = false)
     {
-        await Context.Interaction.DeferAsync(true);
-        _commandQueue.Queue(async () =>
+        if (name.Length > 93 || !name.All(c => c is (>= '0' and <= '9') or (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or ' '))
+        {
+            await RespondSilentAsync("The name parameter is not valid. Names can only contain letters, numbers, and spaces.");
+            return;
+        }
+
+        if (!DateOnly.TryParse(dateString, out var date))
+        {
+            await RespondSilentAsync("The date parameter is not a valid date.");
+            return;
+        }
+
+        if (!TimeOnly.TryParse(timeString, out var time))
+        {
+            await RespondSilentAsync("The time parameter is not a valid time of day.");
+            return;
+        }
+
+        var dateTime = date.ToDateTime(time);
+        var dateTimeOffset = new DateTimeOffset(dateTime, _timeZone.GetUtcOffset(dateTime));
+
+        if (dateTimeOffset < DateTimeOffset.UtcNow)
+        {
+            await RespondSilentAsync("The date and time is in the past!");
+            return;
+        }
+
+        await QueueTaskAsync(async () =>
         {
             var options = await _persistence.LoadAsync<GuildOptions>(Context.Guild.Id);
 
@@ -26,33 +52,6 @@ public partial class RaidCommand
             if (!((IGuildUser)Context.User).RoleIds.Contains(options.CreateRoleId))
             {
                 await RespondSilentAsync("You do not have permission to use this command.");
-                return;
-            }
-
-            if (name.Length > 93 || !name.All(c => c is (>= '0' and <= '9') or (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or ' '))
-            {
-                await RespondSilentAsync("The name parameter is not valid. Names can only contain letters, numbers, and spaces.");
-                return;
-            }
-
-            if (!DateOnly.TryParse(dateString, out var date))
-            {
-                await RespondSilentAsync("The date parameter is not a valid date.");
-                return;
-            }
-
-            if (!TimeOnly.TryParse(timeString, out var time))
-            {
-                await RespondSilentAsync("The time parameter is not a valid time of day.");
-                return;
-            }
-
-            var dateTime = date.ToDateTime(time);
-            var dateTimeOffset = new DateTimeOffset(dateTime, _timeZone.GetUtcOffset(dateTime));
-
-            if (dateTimeOffset < DateTimeOffset.UtcNow)
-            {
-                await RespondSilentAsync("The date and time is in the past!");
                 return;
             }
 

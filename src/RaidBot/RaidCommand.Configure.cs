@@ -17,8 +17,7 @@ public partial class RaidCommand
         }
         else
         {
-            await Context.Interaction.DeferAsync(true);
-            _commandQueue.Queue(async () =>
+            await QueueTaskAsync(async () =>
             {
                 var category = (await Context.Guild.GetCategoriesAsync()).FirstOrDefault(c => string.Equals(c.Name, categoryName, StringComparison.OrdinalIgnoreCase))
                     ?? await Context.Guild.CreateCategoryAsync(categoryName);

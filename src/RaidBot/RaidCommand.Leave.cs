@@ -12,24 +12,16 @@ public partial class RaidCommand
 
     private async Task LeaveAsync()
     {
-        await Context.Interaction.DeferAsync(true);
-        _commandQueue.Queue(async () =>
+        await QueueContentTaskAsync(async raidContent =>
         {
-            if (await ReadContentAsync() is { } raidContent)
+            if (raidContent.Members.RemoveAll(m => m.OwnerId == Context.User.Id) > 0)
             {
-                if (raidContent.Members.RemoveAll(m => m.OwnerId == Context.User.Id) > 0)
-                {
-                    await SaveAsync(Context.Channel, raidContent);
-                    await RespondSilentAsync("You've left the raid.");
-                }
-                else
-                {
-                    await RespondSilentAsync("You aren't in this raid.");
-                }
+                await SaveAsync(Context.Channel, raidContent);
+                await RespondSilentAsync("You've left the raid.");
             }
             else
             {
-                await RespondSilentAsync("This channel is not a raid channel.");
+                await RespondSilentAsync("You aren't in this raid.");
             }
         });
     }

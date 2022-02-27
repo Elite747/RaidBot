@@ -12,25 +12,9 @@ public partial class RaidCommand
         [Summary("role", "The role they will be performing.")] PlayerRole playerRole,
         [Summary("name", "The optional character name.")] string? name = null)
     {
-        await Context.Interaction.DeferAsync(true);
-        _commandQueue.Queue(async () =>
-        {
-            if (await ReadContentAsync() is { } raidContent)
-            {
-                if (Context.User.Id == raidContent.OwnerId)
-                {
-                    await AddInternalAsync(raidContent, playerClass, playerRole, user, name);
-                }
-                else
-                {
-                    await RespondSilentAsync("You are not the owner of this raid channel.");
-                }
-            }
-            else
-            {
-                await RespondSilentAsync("This channel is not a raid channel.");
-            }
-        });
+        await QueueContentTaskAsync(raidContent => Context.User.Id == raidContent.OwnerId ?
+            AddInternalAsync(raidContent, playerClass, playerRole, user, name) :
+            RespondSilentAsync("You are not the owner of this raid channel."));
     }
 
     [SlashCommand("join", "Joins a raid signup.")]
@@ -39,18 +23,7 @@ public partial class RaidCommand
         [Summary("role", "The role you will be performing.")] PlayerRole playerRole,
         [Summary("name", "The optional character name.")] string? name = null)
     {
-        await Context.Interaction.DeferAsync(true);
-        _commandQueue.Queue(async () =>
-        {
-            if (await ReadContentAsync() is { } raidContent)
-            {
-                await AddInternalAsync(raidContent, playerClass, playerRole, Context.User, name);
-            }
-            else
-            {
-                await RespondSilentAsync("This channel is not a raid channel.");
-            }
-        });
+        await QueueContentTaskAsync(raidContent => AddInternalAsync(raidContent, playerClass, playerRole, Context.User, name));
     }
 
     [ComponentInteraction("raidjoin", ignoreGroupNames: true)]
@@ -97,42 +70,22 @@ public partial class RaidCommand
             return;
         }
 
-        await Context.Interaction.DeferAsync(true);
-        _commandQueue.Queue(async () =>
-        {
-            if (await ReadContentAsync() is { } raidContent)
-            {
-                await AddInternalAsync(raidContent, playerClass.Value, playerRole.Value, Context.User, name);
-            }
-            else
-            {
-                await RespondSilentAsync("This channel is not a raid channel.");
-            }
-        });
+        await QueueContentTaskAsync(raidContent => AddInternalAsync(raidContent, playerClass.Value, playerRole.Value, Context.User, name));
     }
 
     [ComponentInteraction("raidjoin:*", ignoreGroupNames: true)]
     public async Task JoinClickAsync(string roleString)
     {
         var playerRole = Enum.Parse<PlayerRole>(roleString);
-        await Context.Interaction.DeferAsync(true);
 
-        _commandQueue.Queue(async () =>
-        {
-            if (await ReadContentAsync() is not null)
-            {
-                await RespondSilentAsync("Select Your Class", new ComponentBuilder()
-                    .WithSelectMenu(
-                        $"raidjoin_class:{playerRole}",
-                        Enum.GetValues<PlayerClass>().Select(c => new SelectMenuOptionBuilder().WithLabel(c.ToString()).WithValue(c.ToString()).WithEmote(GetEmote(c))).ToList(),
-                        "Select your class")
-                    .Build());
-            }
-            else
-            {
-                await RespondSilentAsync("This channel is not a raid channel.");
-            }
-        });
+        await QueueContentTaskAsync(_ => RespondSilentAsync(
+            "Select Your Class",
+            new ComponentBuilder()
+                .WithSelectMenu(
+                    $"raidjoin_class:{playerRole}",
+                    Enum.GetValues<PlayerClass>().Select(c => new SelectMenuOptionBuilder().WithLabel(c.ToString()).WithValue(c.ToString()).WithEmote(GetEmote(c))).ToList(),
+                    "Select your class")
+                .Build()));
     }
 
     [ComponentInteraction("raidjoin_class:*", ignoreGroupNames: true)]
@@ -140,19 +93,8 @@ public partial class RaidCommand
     {
         var playerRole = Enum.Parse<PlayerRole>(roleString);
         var playerClass = Enum.Parse<PlayerClass>(selection[0]);
-        await Context.Interaction.DeferAsync(true);
 
-        _commandQueue.Queue(async () =>
-        {
-            if (await ReadContentAsync() is { } raidContent)
-            {
-                await AddInternalAsync(raidContent, playerClass, playerRole, Context.User, null);
-            }
-            else
-            {
-                await RespondSilentAsync("This channel is not a raid channel.");
-            }
-        });
+        await QueueContentTaskAsync(raidContent => AddInternalAsync(raidContent, playerClass, playerRole, Context.User, null));
     }
 
     private async Task AddInternalAsync(
