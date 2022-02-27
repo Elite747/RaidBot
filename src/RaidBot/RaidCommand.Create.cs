@@ -92,7 +92,8 @@ public partial class RaidCommand
                     overwrites.Add(new(Context.User.Id, PermissionTarget.User, new(useSlashCommands: PermValue.Allow, viewChannel: PermValue.Allow, sendMessages: PermValue.Allow, manageMessages: PermValue.Allow, useExternalEmojis: PermValue.Allow)));
                 });
 
-            await SaveAsync(channel, new RaidContent(name, dateTimeOffset, Context.User.Id), 0);
+            // Set MessageId to 0 explicitly so that SaveAsync doesn't go searching for a declaration.
+            await SaveAsync(channel, new RaidContent(name, dateTimeOffset, Context.User.Id) { MessageId = 0 });
 
             string hideToggle = hidden ? "show" : "hide";
             string message = $"Raid Created! <#{channel.Id}>" +

@@ -15,12 +15,11 @@ public partial class RaidCommand
         await Context.Interaction.DeferAsync(true);
         _commandQueue.Queue(async () =>
         {
-            if (await GetDeclarationAsync() is { } declarationMessage &&
-            await ReadContentAsync() is { } raidContent)
+            if (await ReadContentAsync() is { } raidContent)
             {
                 if (Context.User.Id == raidContent.OwnerId)
                 {
-                    await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, user, name);
+                    await AddInternalAsync(raidContent, playerClass, playerRole, user, name);
                 }
                 else
                 {
@@ -43,10 +42,9 @@ public partial class RaidCommand
         await Context.Interaction.DeferAsync(true);
         _commandQueue.Queue(async () =>
         {
-            if (await GetDeclarationAsync() is { } declarationMessage &&
-                await ReadContentAsync() is { } raidContent)
+            if (await ReadContentAsync() is { } raidContent)
             {
-                await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, Context.User, name);
+                await AddInternalAsync(raidContent, playerClass, playerRole, Context.User, name);
             }
             else
             {
@@ -60,8 +58,7 @@ public partial class RaidCommand
     {
         _commandQueue.Queue(async () =>
         {
-            if (await GetDeclarationAsync() is { } declarationMessage &&
-            await ReadContentAsync() is { } raidContent)
+            if (await ReadContentAsync() is { } raidContent)
             {
                 var current = raidContent.Members.Find(m => m.OwnerId == Context.User.Id);
 
@@ -103,10 +100,9 @@ public partial class RaidCommand
         await Context.Interaction.DeferAsync(true);
         _commandQueue.Queue(async () =>
         {
-            if (await GetDeclarationAsync() is { } declarationMessage &&
-            await ReadContentAsync() is { } raidContent)
+            if (await ReadContentAsync() is { } raidContent)
             {
-                await AddInternalAsync(declarationMessage, raidContent, playerClass.Value, playerRole.Value, Context.User, name);
+                await AddInternalAsync(raidContent, playerClass.Value, playerRole.Value, Context.User, name);
             }
             else
             {
@@ -123,8 +119,7 @@ public partial class RaidCommand
 
         _commandQueue.Queue(async () =>
         {
-            if (await GetDeclarationAsync() is { } declarationMessage &&
-                await ReadContentAsync() is { } raidContent)
+            if (await ReadContentAsync() is not null)
             {
                 await RespondSilentAsync("Select Your Class", new ComponentBuilder()
                     .WithSelectMenu(
@@ -149,10 +144,9 @@ public partial class RaidCommand
 
         _commandQueue.Queue(async () =>
         {
-            if (await GetDeclarationAsync() is { } declarationMessage &&
-                await ReadContentAsync() is { } raidContent)
+            if (await ReadContentAsync() is { } raidContent)
             {
-                await AddInternalAsync(declarationMessage, raidContent, playerClass, playerRole, Context.User, null);
+                await AddInternalAsync(raidContent, playerClass, playerRole, Context.User, null);
             }
             else
             {
@@ -162,7 +156,6 @@ public partial class RaidCommand
     }
 
     private async Task AddInternalAsync(
-        IUserMessage declarationMessage,
         RaidContent raidContent,
         PlayerClass playerClass,
         PlayerRole playerRole,
@@ -191,7 +184,7 @@ public partial class RaidCommand
             });
         }
 
-        await SaveAsync(Context.Channel, raidContent, declarationMessage.Id);
+        await SaveAsync(Context.Channel, raidContent);
 
         string message = $"{FindRawEmote(playerClass)} {user.Mention} {(existing is not null ? "updated." : "added.")}";
 

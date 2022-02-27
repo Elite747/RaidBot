@@ -9,8 +9,7 @@ public partial class RaidCommand
     public async Task DeleteAsync()
     {
         await Context.Interaction.DeferAsync(true);
-        if (await GetDeclarationAsync() is { } declarationMessage &&
-            await ReadContentAsync() is { } raidContent)
+        if (await ReadContentAsync() is { } raidContent)
         {
             if (Context.User.Id == raidContent.OwnerId || Context.User.Id == Context.Guild.OwnerId)
             {

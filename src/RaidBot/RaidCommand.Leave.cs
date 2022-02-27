@@ -15,12 +15,11 @@ public partial class RaidCommand
         await Context.Interaction.DeferAsync(true);
         _commandQueue.Queue(async () =>
         {
-            if (await GetDeclarationAsync() is { } declarationMessage &&
-                await ReadContentAsync() is { } raidContent)
+            if (await ReadContentAsync() is { } raidContent)
             {
                 if (raidContent.Members.RemoveAll(m => m.OwnerId == Context.User.Id) > 0)
                 {
-                    await SaveAsync(Context.Channel, raidContent, declarationMessage.Id);
+                    await SaveAsync(Context.Channel, raidContent);
                     await RespondSilentAsync("You've left the raid.");
                 }
                 else

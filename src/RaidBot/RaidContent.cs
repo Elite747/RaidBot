@@ -16,4 +16,6 @@ public class RaidContent
     public ulong OwnerId { get; set; }
 
     public List<RaidMember> Members { get; set; } = new();
+
+    public ulong? MessageId { get; set; }
 }

@@ -21,8 +21,7 @@ public partial class RaidCommand
 
     private async Task SetHiddenAsync(bool hidden)
     {
-        if (await GetDeclarationAsync() is { } declarationMessage &&
-            await ReadContentAsync() is { } raidContent)
+        if (await ReadContentAsync() is { } raidContent)
         {
             if (Context.User.Id == raidContent.OwnerId)
             {

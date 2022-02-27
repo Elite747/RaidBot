@@ -79,7 +79,7 @@ public partial class RaidCommand : InteractionModuleBase
         }
     }
 
-    private async Task SaveAsync(IMessageChannel channel, RaidContent raidContent, ulong messageId)
+    private async Task SaveAsync(IMessageChannel channel, RaidContent raidContent)
     {
         foreach (var member in raidContent.Members)
         {
@@ -94,11 +94,23 @@ public partial class RaidCommand : InteractionModuleBase
             }
         }
 
-        await _persistence.SaveAsync(channel.Id, raidContent);
-
-        if (messageId > 0)
+        if (!raidContent.MessageId.HasValue)
         {
-            await channel.ModifyMessageAsync(messageId, message =>
+            var declarationMessage = await GetDeclarationAsync();
+
+            if (declarationMessage is null)
+            {
+                await RespondSilentAsync("This channel is not a raid channel.");
+                return;
+            }
+
+            raidContent.MessageId = declarationMessage.Id;
+        }
+
+        if (raidContent.MessageId > 0)
+        {
+            await _persistence.SaveAsync(channel.Id, raidContent);
+            await channel.ModifyMessageAsync(raidContent.MessageId.Value, message =>
             {
                 message.Content = MakeMessageContent(raidContent);
                 message.Embed = MakeMessageEmbed(raidContent);
@@ -112,6 +124,8 @@ public partial class RaidCommand : InteractionModuleBase
                 embed: MakeMessageEmbed(raidContent),
                 components: MakeMessageComponents());
             await message.PinAsync();
+            raidContent.MessageId = message.Id;
+            await _persistence.SaveAsync(channel.Id, raidContent);
         }
     }
 

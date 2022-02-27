@@ -14,8 +14,7 @@ public partial class RaidCommand
         await Context.Interaction.DeferAsync(true);
         _commandQueue.Queue(async () =>
         {
-            if (await GetDeclarationAsync() is { } declarationMessage &&
-            await ReadContentAsync() is { } raidContent)
+            if (await ReadContentAsync() is { } raidContent)
             {
                 if (Context.User.Id == raidContent.OwnerId)
                 {
@@ -106,7 +105,7 @@ public partial class RaidCommand
 
                     bool isToday = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, _timeZone).Date == raidContent.Date.Date;
 
-                    await SaveAsync(Context.Channel, raidContent, declarationMessage.Id);
+                    await SaveAsync(Context.Channel, raidContent);
                     await ((ITextChannel)Context.Channel).ModifyAsync(channel => channel.Name = $"{(isToday ? "⭐" : "")}{raidContent.Date:MMM-dd}-{raidContent.Name.Replace(' ', '-')}");
                     await RespondSilentAsync("Raid updated.");
                 }
