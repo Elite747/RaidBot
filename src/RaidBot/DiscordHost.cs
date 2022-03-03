@@ -98,7 +98,7 @@ internal class DiscordHost : IHostedService
                             }
                         }
 
-                        int index = 0;
+                        int index = (channels.FirstOrDefault(c => c.Id == options.CategoryId)?.Position ?? 0) + 1;
                         foreach ((RaidContent? raidContent, ITextChannel channel) in eventChannels.OrderBy(t => t.Item1?.Date).ThenBy(t => t.Item2.Position))
                         {
                             if (channel.Position != index)
