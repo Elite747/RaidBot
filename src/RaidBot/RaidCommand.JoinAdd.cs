@@ -38,7 +38,7 @@ public partial class RaidCommand
                 await RespondWithModalAsync(new ModalBuilder()
                     .WithTitle("Join Raid")
                     .WithCustomId("raidjoin_respond")
-                    .AddTextInput("Role", "raidjoin_role", placeholder: "tank, healer, caster, melee", maxLength: 10, required: true, value: current?.PlayerRole.ToString())
+                    .AddTextInput("Role", "raidjoin_role", placeholder: "tank, healer, ranged, melee", maxLength: 10, required: true, value: current?.PlayerRole.ToString())
                     .AddTextInput("Class", "raidjoin_class", placeholder: "druid, hunter, mage, etc...", maxLength: 12, required: true, value: current?.PlayerClass.ToString())
                     .AddTextInput("Character Name (optional)", "raidjoin_name", maxLength: 12, required: false, value: current?.Name)
                     .Build());
