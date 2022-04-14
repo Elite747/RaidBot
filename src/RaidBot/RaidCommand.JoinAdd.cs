@@ -128,7 +128,7 @@ public partial class RaidCommand
 
         await SaveAsync(Context.Channel, raidContent);
 
-        string message = $"{FindRawEmote(playerClass)} {user.Mention} {(existing is not null ? "updated." : "added.")}";
+        string message = $"{user.Mention} {(existing is not null ? "updated." : "added.")}";
 
         if (Context.Interaction.Type != InteractionType.MessageComponent)
         {
