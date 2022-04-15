@@ -147,6 +147,7 @@ public partial class RaidCommand : InteractionModuleBase
                 message.Content = MakeMessageContent(raidContent);
                 message.Embed = MakeMessageEmbed(raidContent);
                 message.Components = MakeMessageComponents();
+                message.AllowedMentions = new AllowedMentions { UserIds = new() { Context.User.Id } };
             });
         }
         else
@@ -154,7 +155,8 @@ public partial class RaidCommand : InteractionModuleBase
             var message = await channel.SendMessageAsync(
                 MakeMessageContent(raidContent),
                 embed: MakeMessageEmbed(raidContent),
-                components: MakeMessageComponents());
+                components: MakeMessageComponents(),
+                allowedMentions: new AllowedMentions { UserIds = new() { Context.User.Id } });
             await message.PinAsync();
             raidContent.MessageId = message.Id;
             await _persistence.SaveAsync(channel.Id, raidContent);
@@ -181,7 +183,9 @@ public partial class RaidCommand : InteractionModuleBase
 
     private static string MakeMessageContent(RaidContent raidContent)
     {
-        return $"**{raidContent.Name}**\n*created by* <@!{raidContent.OwnerId}>";
+        return $@"<@!{raidContent.OwnerId}>, your raid will automatically delete 48 hours after the start time.
+You can manually add `/raid add @user` or remove `/raid kick @user` users.
+You can change this event with `/raid update`.";
     }
 
     private static MessageComponent MakeMessageComponents()

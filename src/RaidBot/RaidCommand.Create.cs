@@ -94,16 +94,9 @@ public partial class RaidCommand
             // Set MessageId to 0 explicitly so that SaveAsync doesn't go searching for a declaration.
             await SaveAsync(channel, new RaidContent(name, dateTimeOffset, Context.User.Id) { MessageId = 0 });
 
-            string hideToggle = hidden ? "show" : "hide";
-            string message = $"Raid Created! <#{channel.Id}>" +
-            $"\nYou can {hideToggle} your raid by typing `/raid {hideToggle}` in your new channel." +
-            "\nAdd users manually by typing `/raid add @user` in your new channel." +
-            "\n... or remove them by typing `/raid kick @user`." +
-            "\nBe sure to type up a description with your loot rules!" +
-            "\nIf you need to change the name, date or time of your raid, use `/raid update`." +
-            "\nWhen the raid is over, be sure to delete it with `/raid delete`!";
+            await channel.SendMessageAsync($"{Context.User.Mention}, please describe your rules here:", allowedMentions: new AllowedMentions { UserIds = new() { Context.User.Id } });
 
-            await RespondSilentAsync(message);
+            await RespondSilentAsync($"Raid Created! <#{channel.Id}>");
         });
     }
 
