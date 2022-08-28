@@ -173,6 +173,7 @@ public partial class RaidCommand
         lookup["shammy"] = lookup["sham"] = PlayerClass.Shaman;
         lookup["lock"] = PlayerClass.Warlock;
         lookup["warr"] = PlayerClass.Warrior;
+        lookup["dk"] = lookup["death knight"] = PlayerClass.DeathKnight;
 
         return lookup;
     }

@@ -10,5 +10,6 @@ public enum PlayerClass
     Rogue,
     Shaman,
     Warlock,
-    Warrior
+    Warrior,
+    DeathKnight
 }
