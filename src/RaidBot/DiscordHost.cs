@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
 using System.Reflection;
@@ -68,8 +69,8 @@ internal class DiscordHost : IHostedService
                     if (options is not null)
                     {
                         var channels = await guild.GetChannelsAsync();
-                        var eventChannels = new List<(RaidContent?, ITextChannel)>();
-                        foreach (var channel in channels.OfType<ITextChannel>().Where(c => c.CategoryId == options.CategoryId))
+                        var eventChannels = new List<(RaidContent?, RestGuildChannel)>();
+                        foreach (var channel in channels.Where(c => c is INestedChannel nested && nested.CategoryId == options.CategoryId))
                         {
                             var raidContent = await _eventPersistence.LoadAsync<RaidContent>(channel.Id);
 
@@ -99,7 +100,7 @@ internal class DiscordHost : IHostedService
                         }
 
                         int index = (channels.FirstOrDefault(c => c.Id == options.CategoryId)?.Position ?? 0) + 1;
-                        foreach ((RaidContent? raidContent, ITextChannel channel) in eventChannels.OrderBy(t => t.Item1?.Date).ThenBy(t => t.Item2.Position))
+                        foreach ((RaidContent? raidContent, RestGuildChannel channel) in eventChannels.OrderBy(t => t.Item1?.Date).ThenBy(t => t.Item2.Position))
                         {
                             if (channel.Position != index)
                             {
