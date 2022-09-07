@@ -56,19 +56,33 @@ public partial class RaidCommand
             }
 
             var channels = await Context.Guild.GetChannelsAsync();
-            var index = 0;
-            foreach (var nextChannel in channels.OfType<ITextChannel>().Where(c => c.CategoryId == options.CategoryId).OrderBy(c => c.Position))
+            var eventChannels = new List<(RaidContent?, IGuildChannel)>();
+            var today = DateTime.UtcNow.Date;
+            foreach (var otherChannel in channels.Where(c => c is INestedChannel nested && nested.CategoryId == options.CategoryId))
             {
-                var raidContent = await _persistence.LoadAsync<RaidContent>(nextChannel.Id);
+                var raidContent = await _persistence.LoadAsync<RaidContent>(otherChannel.Id);
 
-                if (raidContent is null || raidContent.Date < dateTimeOffset)
+                if (raidContent is null || raidContent.Date >= DateTimeOffset.UtcNow.AddDays(-2))
                 {
+                    eventChannels.Add((raidContent, otherChannel));
+                }
+            }
+
+            int index = (channels.FirstOrDefault(c => c.Id == options.CategoryId)?.Position ?? 0) + 1;
+            int? targetIndex = null;
+            foreach ((RaidContent? raidContent, IGuildChannel otherChannel) in eventChannels.OrderBy(t => t.Item1?.Date).ThenBy(t => t.Item2.Position))
+            {
+                if (raidContent is not null && raidContent.Date >= dateTimeOffset)
+                {
+                    targetIndex ??= index;
                     index++;
                 }
-                else
+                if (otherChannel.Position != index)
                 {
-                    break;
+                    int thisIndex = index;
+                    await otherChannel.ModifyAsync(c => c.Position = thisIndex);
                 }
+                index++;
             }
 
             bool isToday = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, _timeZone).Date == dateTimeOffset.Date;
@@ -80,7 +94,7 @@ public partial class RaidCommand
                     var overwrites = new List<Overwrite>();
                     c.PermissionOverwrites = overwrites;
                     c.CategoryId = options.CategoryId;
-                    c.Position = index;
+                    c.Position = targetIndex ?? index;
 
                     if (hidden)
                     {
