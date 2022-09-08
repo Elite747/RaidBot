@@ -82,16 +82,14 @@ internal class DiscordHost : IHostedService
                             {
                                 if (raidContent is not null)
                                 {
-                                    if (raidContent.Date.Date == today)
+                                    string prefix = raidContent.Date.Date == today ? "⭐" :
+                                        raidContent.Date.Date < today ? "❌" : "";
+
+                                    string targetName = $"{prefix}{raidContent.Date:MMM-dd}-{raidContent.Name.Replace(' ', '-')}";
+
+                                    if (channel.Name != targetName)
                                     {
-                                        if (!channel.Name.StartsWith("⭐"))
-                                        {
-                                            await channel.ModifyAsync(c => c.Name = "⭐" + channel.Name);
-                                        }
-                                    }
-                                    else if (channel.Name.StartsWith("⭐"))
-                                    {
-                                        await channel.ModifyAsync(c => c.Name = channel.Name[1..]);
+                                        await channel.ModifyAsync(c => c.Name = targetName);
                                     }
                                 }
 
