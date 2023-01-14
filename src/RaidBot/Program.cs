@@ -4,8 +4,8 @@ using RaidBot;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<DiscordConfigurationOptions>(builder.Configuration.GetSection("Discord"));
-builder.Services.AddSingleton(TimeZoneInfo.FindSystemTimeZoneById(builder.Configuration["TimeZone"]));
-builder.Services.AddSingleton<IEventPersistence>(_ => new LocalPersistence(builder.Configuration["PersistantFolder"]));
+builder.Services.AddSingleton(TimeZoneInfo.FindSystemTimeZoneById(builder.Configuration["TimeZone"]!));
+builder.Services.AddSingleton<IEventPersistence>(_ => new LocalPersistence(builder.Configuration["PersistantFolder"]!));
 //builder.Services.AddSingleton<IEventPersistence>(_ => new AzurePersistence());
 builder.Services.AddSingleton(new CommandQueue());
 builder.Services.AddSingleton(_ => new DiscordSocketClient());
