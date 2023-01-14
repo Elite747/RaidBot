@@ -155,8 +155,8 @@ public partial class RaidCommand : InteractionModuleBase
             var message = await channel.SendMessageAsync(
                 MakeMessageContent(raidContent),
                 embed: MakeMessageEmbed(raidContent),
-                components: MakeMessageComponents(),
-                allowedMentions: new AllowedMentions { UserIds = new() { Context.User.Id } });
+                allowedMentions: new AllowedMentions { UserIds = new() { Context.User.Id } },
+                components: MakeMessageComponents());
             await message.PinAsync();
             raidContent.MessageId = message.Id;
             await _persistence.SaveAsync(channel.Id, raidContent);
@@ -260,4 +260,29 @@ You can change this event with `/raid update`.";
 
         builder.AddField(fieldName, sb.ToString(), inline: true);
     }
+
+    private readonly OverwritePermissions _everyonePermissions = new(
+        addReactions: PermValue.Allow,
+        viewChannel: PermValue.Allow,
+        sendMessages: PermValue.Allow,
+        attachFiles: PermValue.Allow,
+        readMessageHistory: PermValue.Allow,
+        useExternalEmojis: PermValue.Allow,
+        useSlashCommands: PermValue.Allow,
+        useApplicationCommands: PermValue.Allow,
+        useExternalStickers: PermValue.Allow);
+
+    private readonly OverwritePermissions _everyoneHiddenPermissions = new(viewChannel: PermValue.Deny);
+
+    private readonly OverwritePermissions _ownerPermissions = new(
+        addReactions: PermValue.Allow,
+        viewChannel: PermValue.Allow,
+        sendMessages: PermValue.Allow,
+        manageMessages: PermValue.Allow,
+        attachFiles: PermValue.Allow,
+        readMessageHistory: PermValue.Allow,
+        useExternalEmojis: PermValue.Allow,
+        useSlashCommands: PermValue.Allow,
+        useApplicationCommands: PermValue.Allow,
+        useExternalStickers: PermValue.Allow);
 }

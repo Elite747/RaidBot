@@ -30,15 +30,16 @@ public partial class RaidCommand
             }
 
             var textChannel = (ITextChannel)Context.Channel;
-            if (!hidden)
+
+            if (hidden)
             {
-                await textChannel.RemovePermissionOverwriteAsync(Context.Guild.EveryoneRole);
-                await RespondSilentAsync("Channel is now visible!");
+                await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, _everyoneHiddenPermissions);
+                await RespondSilentAsync("Channel is now hidden!");
             }
             else
             {
-                await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, new(viewChannel: PermValue.Deny));
-                await RespondSilentAsync("Channel is now hidden!");
+                await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, _everyonePermissions);
+                await RespondSilentAsync("Channel is now visible!");
             }
         }
         else

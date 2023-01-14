@@ -91,18 +91,14 @@ public partial class RaidCommand
                 $"{(isToday ? "⭐" : "")}{date:MMM-dd}-{name.Replace(' ', '-')}",
                 c =>
                 {
-                    var overwrites = new List<Overwrite>();
-                    c.PermissionOverwrites = overwrites;
+                    c.PermissionOverwrites = new List<Overwrite>
+                    {
+                        new(Context.Guild.EveryoneRole.Id, PermissionTarget.Role, hidden ? _everyoneHiddenPermissions : _everyonePermissions),
+                        new(Context.Client.CurrentUser.Id, PermissionTarget.User, _ownerPermissions),
+                        new(Context.User.Id, PermissionTarget.User, _ownerPermissions)
+                    };
                     c.CategoryId = options.CategoryId;
                     c.Position = targetIndex ?? index;
-
-                    if (hidden)
-                    {
-                        overwrites.Add(new(Context.Guild.EveryoneRole.Id, PermissionTarget.Role, new(viewChannel: PermValue.Deny)));
-                    }
-
-                    overwrites.Add(new(Context.Client.CurrentUser.Id, PermissionTarget.User, new(useSlashCommands: PermValue.Allow, viewChannel: PermValue.Allow, sendMessages: PermValue.Allow, manageMessages: PermValue.Allow, useExternalEmojis: PermValue.Allow)));
-                    overwrites.Add(new(Context.User.Id, PermissionTarget.User, new(useSlashCommands: PermValue.Allow, viewChannel: PermValue.Allow, sendMessages: PermValue.Allow, manageMessages: PermValue.Allow, useExternalEmojis: PermValue.Allow)));
                 });
 
             // Set MessageId to 0 explicitly so that SaveAsync doesn't go searching for a declaration.
