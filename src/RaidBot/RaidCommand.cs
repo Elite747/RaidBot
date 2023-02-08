@@ -265,6 +265,7 @@ You can change this event with `/raid update`.";
         addReactions: PermValue.Allow,
         viewChannel: PermValue.Allow,
         sendMessages: PermValue.Allow,
+        embedLinks: PermValue.Allow,
         attachFiles: PermValue.Allow,
         readMessageHistory: PermValue.Allow,
         useExternalEmojis: PermValue.Allow,
