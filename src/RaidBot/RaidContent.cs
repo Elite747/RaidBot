@@ -1,21 +1,14 @@
 ﻿namespace RaidBot;
 
-public class RaidContent
+public class RaidContent(string name, DateTimeOffset date, ulong ownerId)
 {
-    public RaidContent(string name, DateTimeOffset date, ulong ownerId)
-    {
-        Name = name;
-        Date = date;
-        OwnerId = ownerId;
-    }
+    public string Name { get; set; } = name;
 
-    public string Name { get; set; }
+    public DateTimeOffset Date { get; set; } = date;
 
-    public DateTimeOffset Date { get; set; }
+    public ulong OwnerId { get; set; } = ownerId;
 
-    public ulong OwnerId { get; set; }
-
-    public List<RaidMember> Members { get; set; } = new();
+    public List<RaidMember> Members { get; set; } = [];
 
     public ulong? MessageId { get; set; }
 }

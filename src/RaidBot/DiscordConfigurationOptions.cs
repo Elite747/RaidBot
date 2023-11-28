@@ -1,6 +1,4 @@
-﻿using Discord.WebSocket;
-
-namespace RaidBot;
+﻿namespace RaidBot;
 
 public class DiscordConfigurationOptions
 {
@@ -8,5 +6,5 @@ public class DiscordConfigurationOptions
 
     public ulong ServerId { get; set; }
 
-    public Dictionary<string, string> Emoji { get; set; } = new();
+    public Dictionary<string, string> Emoji { get; set; } = [];
 }

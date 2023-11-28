@@ -2,8 +2,8 @@
 
 public enum PlayerRole
 {
-    Tank,
-    Healer,
-    Ranged,
-    Melee
+    Tank = 0,
+    Healer = 1,
+    Ranged = 2,
+    Melee = 3
 }

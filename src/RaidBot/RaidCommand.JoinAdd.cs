@@ -154,9 +154,9 @@ public partial class RaidCommand
         return null;
     }
 
-    private static readonly IReadOnlyDictionary<string, PlayerClass> _classLookup = BuildClassLookup();
+    private static readonly Dictionary<string, PlayerClass> _classLookup = BuildClassLookup();
 
-    private static readonly IReadOnlyDictionary<string, PlayerRole> _roleLookup = BuildRoleLookup();
+    private static readonly Dictionary<string, PlayerRole> _roleLookup = BuildRoleLookup();
 
     private static Dictionary<string, PlayerClass> BuildClassLookup()
     {

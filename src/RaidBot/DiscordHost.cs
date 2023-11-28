@@ -1,9 +1,9 @@
-﻿using Discord;
+﻿using System.Reflection;
+using Discord;
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
-using System.Reflection;
 
 namespace RaidBot;
 
@@ -82,8 +82,19 @@ internal class DiscordHost : IHostedService
                             {
                                 if (raidContent is not null)
                                 {
-                                    string prefix = raidContent.Date.Date == today ? "⭐" :
-                                        raidContent.Date.Date < today ? "❌" : "";
+                                    string prefix;
+                                    if (raidContent.Date.Date == today)
+                                    {
+                                        prefix = "⭐";
+                                    }
+                                    else if (raidContent.Date.Date < today)
+                                    {
+                                        prefix = "❌";
+                                    }
+                                    else
+                                    {
+                                        prefix = "";
+                                    }
 
                                     string targetName = $"{prefix}{raidContent.Date:MMM-dd}-{raidContent.Name.Replace(' ', '-')}";
 
@@ -130,12 +141,14 @@ internal class DiscordHost : IHostedService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed to execute", ex);
+            _logger.LogError(ex, "Failed to execute");
 
             // If a Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
             // response, or at least let the user know that something went wrong during the command execution.
             if (arg.Type == InteractionType.ApplicationCommand)
+            {
                 await arg.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+            }
         }
     }
 

@@ -6,15 +6,8 @@ internal static class StringBuilderExtensions
 {
     public static StringBuilder AppendTruncated(this StringBuilder stringBuilder, string str, int maxLength)
     {
-        if (str is null)
-        {
-            throw new ArgumentNullException(nameof(str));
-        }
-
-        if (maxLength < 3)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxLength));
-        }
+        ArgumentNullException.ThrowIfNull(str);
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxLength, 3);
 
         if (str.Length <= maxLength)
         {

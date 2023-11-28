@@ -1,28 +1,27 @@
-﻿using Discord;
+﻿using System.Text;
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Options;
-using System.Text;
 
 namespace RaidBot;
 
 [Group("raid", "Commands for manipulating raid signups.")]
-public partial class RaidCommand : InteractionModuleBase
+public partial class RaidCommand(
+    IEventPersistence persistence,
+    IOptions<DiscordConfigurationOptions> options,
+    TimeZoneInfo timeZone,
+    CommandQueue commandQueue) : InteractionModuleBase
 {
-    private readonly IEventPersistence _persistence;
-    private readonly TimeZoneInfo _timeZone;
-    private readonly CommandQueue _commandQueue;
-    private readonly DiscordConfigurationOptions _options;
+    private readonly IEventPersistence _persistence = persistence;
+    private readonly TimeZoneInfo _timeZone = timeZone;
+    private readonly CommandQueue _commandQueue = commandQueue;
+    private readonly DiscordConfigurationOptions _options = options.Value;
 
-    public RaidCommand(IEventPersistence persistence, IOptions<DiscordConfigurationOptions> options, TimeZoneInfo timeZone, CommandQueue commandQueue)
+    private Emote? GetEmote(Enum en)
     {
-        _persistence = persistence;
-        _options = options.Value;
-        _timeZone = timeZone;
-        _commandQueue = commandQueue;
+        return GetEmote(en.ToString());
     }
-
-    private Emote? GetEmote(Enum en) => GetEmote(en.ToString());
 
     private Emote? GetEmote(string key)
     {
@@ -33,7 +32,10 @@ public partial class RaidCommand : InteractionModuleBase
         return null;
     }
 
-    private string? FindRawEmote(Enum key) => FindRawEmote(key.ToString());
+    private string? FindRawEmote(Enum key)
+    {
+        return FindRawEmote(key.ToString());
+    }
 
     private string? FindRawEmote(string key)
     {
@@ -147,7 +149,7 @@ public partial class RaidCommand : InteractionModuleBase
                 message.Content = MakeMessageContent(raidContent);
                 message.Embed = MakeMessageEmbed(raidContent);
                 message.Components = MakeMessageComponents();
-                message.AllowedMentions = new AllowedMentions { UserIds = new() { Context.User.Id } };
+                message.AllowedMentions = new AllowedMentions { UserIds = [Context.User.Id] };
             });
         }
         else
@@ -155,7 +157,7 @@ public partial class RaidCommand : InteractionModuleBase
             var message = await channel.SendMessageAsync(
                 MakeMessageContent(raidContent),
                 embed: MakeMessageEmbed(raidContent),
-                allowedMentions: new AllowedMentions { UserIds = new() { Context.User.Id } },
+                allowedMentions: new AllowedMentions { UserIds = [Context.User.Id] },
                 components: MakeMessageComponents());
             await message.PinAsync();
             raidContent.MessageId = message.Id;

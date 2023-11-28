@@ -2,14 +2,9 @@
 
 namespace RaidBot;
 
-internal class LocalPersistence : IEventPersistence
+internal class LocalPersistence(string folder) : IEventPersistence
 {
-    private readonly DirectoryInfo _directory;
-
-    public LocalPersistence(string folder)
-    {
-        _directory = Directory.CreateDirectory(folder);
-    }
+    private readonly DirectoryInfo _directory = Directory.CreateDirectory(folder);
 
     public async Task SaveAsync(ulong id, object content)
     {

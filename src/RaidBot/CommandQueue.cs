@@ -4,14 +4,8 @@ namespace RaidBot;
 
 public sealed class CommandQueue : IDisposable
 {
-    private readonly ConcurrentQueue<Func<Task>> _messages;
-    private readonly SemaphoreSlim _signal;
-
-    public CommandQueue()
-    {
-        _messages = new ConcurrentQueue<Func<Task>>();
-        _signal = new SemaphoreSlim(0);
-    }
+    private readonly ConcurrentQueue<Func<Task>> _messages = new();
+    private readonly SemaphoreSlim _signal = new(0);
 
     public void Queue(Func<Task> message)
     {
@@ -33,5 +27,8 @@ public sealed class CommandQueue : IDisposable
         }
     }
 
-    public void Dispose() => _signal.Dispose();
+    public void Dispose()
+    {
+        _signal.Dispose();
+    }
 }
