@@ -1,4 +1,5 @@
 ﻿using DSharpPlus;
+using DSharpPlus.SlashCommands;
 
 namespace RaidBot2.Discord.Tasks;
 
@@ -8,6 +9,8 @@ public abstract class DiscordTaskBase : IDiscordTask
     private Task? _executingTask;
 
     protected abstract Task ExecuteAsync(DiscordClient discord, CancellationToken cancellationToken);
+
+    public virtual InteractionContext? InteractionContext => null;
 
     async Task IDiscordTask.ExecuteAsync(DiscordClient discord, CancellationToken cancellationToken)
     {

@@ -56,6 +56,10 @@ public class DiscordHost : BackgroundService, IAsyncDisposable
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Event execution failed.");
+                if (task.InteractionContext is not null)
+                {
+                    await task.InteractionContext.FollowUpAsync(new DSharpPlus.Entities.DiscordFollowupMessageBuilder().WithContent("Command execution failed.").AsEphemeral());
+                }
             }
         }
     }
