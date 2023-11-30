@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32002.185
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaidBot", "src\RaidBot\RaidBot.csproj", "{69A813E0-B848-4379-9783-B149502E451D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaidBot", "src\RaidBot\RaidBot.csproj", "{69A813E0-B848-4379-9783-B149502E451D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaidBot2", "src\RaidBot2\RaidBot2.csproj", "{BA3FAB22-0DAE-4673-BD98-B0EC8D90086B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{69A813E0-B848-4379-9783-B149502E451D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69A813E0-B848-4379-9783-B149502E451D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69A813E0-B848-4379-9783-B149502E451D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA3FAB22-0DAE-4673-BD98-B0EC8D90086B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA3FAB22-0DAE-4673-BD98-B0EC8D90086B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA3FAB22-0DAE-4673-BD98-B0EC8D90086B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA3FAB22-0DAE-4673-BD98-B0EC8D90086B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

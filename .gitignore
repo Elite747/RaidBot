@@ -364,3 +364,5 @@ FodyWeavers.xsd
 
 # Azure publish artifacts
 ServiceDependencies/
+
+/src/RaidBot2/raidbot.db*

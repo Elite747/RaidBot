@@ -8,8 +8,7 @@ public partial class RaidCommand
     [SlashCommand("configure", "Sets up the raid bot for this server. This can only be used by the server's owner.")]
     public async Task ConfigureAsync(
         [Summary("category", "The category to add events to. If no category with this name exists, it will be created.")] string categoryName,
-        [Summary("role", "The role that a user must have to add an event.")] IRole role,
-        [Summary("button", "If true, a button will be created in this channel for creating a signup.")] bool button)
+        [Summary("role", "The role that a user must have to add an event.")] IRole role)
     {
         if (Context.User.Id != Context.Guild.OwnerId)
         {
@@ -33,13 +32,10 @@ public partial class RaidCommand
 
                 await RespondSilentAsync("Configuration saved!");
 
-                if (button)
-                {
-                    await Context.Channel.SendMessageAsync("Raids:", components: new ComponentBuilder()
-                        .WithButton("Start A New Raid", "newraid:s", row: 0)
-                        .WithButton("Start A Hidden Raid", "newraid:h", ButtonStyle.Secondary, row: 1)
-                        .Build());
-                }
+                await Context.Channel.SendMessageAsync("Raids:", components: new ComponentBuilder()
+                    .WithButton("Start A New Raid", "newraid:s", row: 0)
+                    .WithButton("Start A Hidden Raid", "newraid:h", ButtonStyle.Secondary, row: 1)
+                    .Build());
             });
         }
     }
