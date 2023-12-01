@@ -1,0 +1,44 @@
+name: Publish RaidBot
+on:
+  release:
+    types: [published]
+env:
+  DOTNET_VERSION: '8.0.x'
+  AZURE_WEBAPP_NAME: valhallaraidbot
+  PROJECT_DIR: 'src/RaidBot'
+  PUBLISH_DIR: 'src/RaidBot/bin/publish'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Set up dependency caching for faster builds
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Build with dotnet
+        run: dotnet build "${{ env.PROJECT_DIR }}" -c Release
+
+      - name: dotnet publish
+        run: dotnet publish "${{ env.PROJECT_DIR }}" -c Release -o "${{ env.PUBLISH_DIR }}"
+
+      - name: Deploy
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.PUBLISH_PROFILE }}
+          package: ${{ env.PUBLISH_DIR }}
+      
