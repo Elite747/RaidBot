@@ -49,8 +49,7 @@ public partial class RaidCommand
                 return;
             }
 
-            var dateTime = date.ToDateTime(time);
-            var dateTimeOffset = GetTime(dateTime, options.Timezone);
+            var dateTimeOffset = TimeZoneHelpers.ConvertTimeToLocal(date.ToDateTime(time), options.Timezone, isUtc: false);
 
             if (dateTimeOffset < DateTimeOffset.UtcNow)
             {
@@ -60,7 +59,6 @@ public partial class RaidCommand
 
             var channels = await Context.Guild.GetChannelsAsync();
             var eventChannels = new List<(Raid?, IGuildChannel)>();
-            var today = DateTime.UtcNow.Date;
             foreach (var otherChannel in channels.Where(c => c is INestedChannel nested && nested.CategoryId == options.CategoryId))
             {
                 var raid = await db.Raids.FirstOrDefaultAsync(x => x.ChannelId == otherChannel.Id);
@@ -88,7 +86,7 @@ public partial class RaidCommand
                 index++;
             }
 
-            bool isToday = GetTime(DateTime.UtcNow, options.Timezone).Date == dateTimeOffset.Date;
+            bool isToday = TimeZoneHelpers.ConvertTimeToLocal(DateTime.UtcNow, options.Timezone, isUtc: true).Date == dateTimeOffset.Date;
 
             var channel = await Context.Guild.CreateTextChannelAsync(
                 $"{(isToday ? "⭐" : "")}{date:MMM-dd}-{name.Replace(' ', '-')}",

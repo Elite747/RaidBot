@@ -84,7 +84,7 @@ public partial class RaidCommand
                         dateTime = default;
                     }
 
-                    raid.Date = GetTime(dateTime, raid.Configuration.Timezone).UtcDateTime;
+                    raid.Date = TimeZoneHelpers.ConvertTimeToLocal(dateTime, raid.Configuration.Timezone, isUtc: false).UtcDateTime;
 
                     if (raid.Date < DateTimeOffset.UtcNow)
                     {
@@ -93,7 +93,7 @@ public partial class RaidCommand
                     }
                 }
 
-                bool isToday = GetTime(DateTime.UtcNow, raid.Configuration.Timezone).Date == raid.Date.Date;
+                bool isToday = TimeZoneHelpers.ConvertTimeToLocal(DateTime.UtcNow, raid.Configuration.Timezone, isUtc: true).Date == raid.Date.Date;
 
                 await SaveAsync(db, Context.Channel, raid);
                 await ((ITextChannel)Context.Channel).ModifyAsync(channel => channel.Name = $"{(isToday ? "⭐" : "")}{raid.Date:MMM-dd}-{raid.Name.Replace(' ', '-')}");

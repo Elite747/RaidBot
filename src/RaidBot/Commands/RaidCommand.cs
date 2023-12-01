@@ -29,16 +29,6 @@ public partial class RaidCommand(
         return null;
     }
 
-    private static DateTimeOffset GetTime(DateTime dateTime, string timezone)
-    {
-        if (!TimeZoneInfo.TryFindSystemTimeZoneById(timezone, out var tz))
-        {
-            tz = TimeZoneInfo.Utc;
-        }
-
-        return TimeZoneInfo.ConvertTime(new DateTimeOffset(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second, TimeSpan.Zero), tz);
-    }
-
     private async Task QueueTaskAsync(Func<ApplicationDbContext, Task> task, bool defer = true)
     {
         if (defer)
@@ -141,12 +131,7 @@ public partial class RaidCommand(
             .ToDictionaryAsync(c => c.Id);
         var roles = await db.Roles.OrderBy(x => x.Id).ToListAsync();
 
-        if (!TimeZoneInfo.TryFindSystemTimeZoneById(raid.Configuration.Timezone, out var tz))
-        {
-            tz = TimeZoneInfo.Utc;
-        }
-
-        var raidDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(raid.Date.Year, raid.Date.Month, raid.Date.Day, raid.Date.Hour, raid.Date.Minute, raid.Date.Second, TimeSpan.Zero), tz);
+        var raidDate = TimeZoneHelpers.ConvertTimeToLocal(raid.Date, raid.Configuration.Timezone, isUtc: true);
 
         if (raid.MessageId > 0)
         {

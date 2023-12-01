@@ -18,9 +18,8 @@ public class UpdateRaidTitlesTask : IGuildExpansionTask
                 continue;
             }
 
-            var tz = TimeZoneInfo.FindSystemTimeZoneById(raid.Timezone) ?? TimeZoneInfo.Utc;
-            var today = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz).Date;
-            var raidDate = TimeZoneInfo.ConvertTime(new DateTime(raid.Date.Year, raid.Date.Month, raid.Date.Day, raid.Date.Hour, raid.Date.Minute, raid.Date.Second, DateTimeKind.Utc), tz).Date;
+            var today = TimeZoneHelpers.ConvertTimeToLocal(DateTime.UtcNow, raid.Timezone, isUtc: true).Date;
+            var raidDate = TimeZoneHelpers.ConvertTimeToLocal(raid.Date, raid.Timezone, isUtc: true).Date;
 
             string prefix;
             if (raidDate == today)
