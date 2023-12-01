@@ -1,9 +1,0 @@
-@RaidBot2_HostAddress = http://localhost:5104
-
-GET {{RaidBot2_HostAddress}}/
-
-###
-
-GET {{RaidBot2_HostAddress}}/ping
-
-###
