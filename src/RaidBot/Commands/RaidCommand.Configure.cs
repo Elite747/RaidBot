@@ -54,7 +54,7 @@ public partial class RaidCommand
 
                 await RespondSilentAsync("Configuration saved!");
 
-                await Context.Channel.SendMessageAsync("Raids:", components: new ComponentBuilder()
+                await Context.Channel.SendMessageAsync($"{expansion.Name} Raids:", components: new ComponentBuilder()
                     .WithButton("Start A New Raid", $"newraid:{expansionId}:{false}", row: 0)
                     .WithButton("Start A Hidden Raid", $"newraid:{expansionId}:{true}", ButtonStyle.Secondary, row: 1)
                     .Build());
