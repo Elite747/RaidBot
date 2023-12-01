@@ -28,7 +28,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<PlayerRole>().HasData([
             new PlayerRole { Id = 1, Name = "Tanks", Icon = "<:tank:945067186421116958>", SearchTerms = "tank;t" },
             new PlayerRole { Id = 2, Name = "Healers", Icon = "<:healer:945067186542772244>", SearchTerms = "healer;heals;heal;h" },
-            new PlayerRole { Id = 3, Name = "Ranged", Icon = "<:rdps:945067186203033691>", SearchTerms = "ranged;caster;rdps;r" },
+            new PlayerRole { Id = 3, Name = "Ranged", Icon = "<:rdps:1179280825196478555>", SearchTerms = "ranged;caster;rdps;r" },
             new PlayerRole { Id = 4, Name = "Melee", Icon = "<:mdps:945067186421104670>", SearchTerms = "melee;mdps;m" },
         ]);
     }
