@@ -15,7 +15,7 @@ public class NewRaidModal : IModal
     [ModalTextInput("newraid_date", TextInputStyle.Short, "Jan 10", maxLength: 93)]
     public string Date { get; set; } = string.Empty;
 
-    [InputLabel("Time")]
+    [InputLabel("Time (Server)")]
     [ModalTextInput("newraid_time", TextInputStyle.Short, "9:00 PM", maxLength: 93)]
     public string Time { get; set; } = string.Empty;
 }
