@@ -46,6 +46,7 @@ public partial class RaidCommand
                 {
                     guild.CategoryId = category.Id;
                     guild.CreateRoleId = role.Id;
+                    guild.Timezone = timezone;
                 }
 
                 await db.SaveChangesAsync();
