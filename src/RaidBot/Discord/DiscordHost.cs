@@ -16,7 +16,7 @@ internal class DiscordHost : IHostedService, IAsyncDisposable
     private readonly ILogger _logger;
     private readonly DiscordConfigurationOptions _options;
     private readonly ChannelReader<IDiscordTask> _taskReader;
-    private CancellationToken _stoppingToken;
+    private CancellationTokenSource? _maintenanceCts;
 
     public DiscordHost(
         DiscordSocketClient discord,
@@ -41,10 +41,10 @@ internal class DiscordHost : IHostedService, IAsyncDisposable
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _stoppingToken = cancellationToken;
         _discord.InteractionCreated += HandleInteractionAsync;
         _discord.AutocompleteExecuted += HandleAutocompleteAsync;
         _discord.Ready += OnReady;
+        _discord.Connected += OnConnected;
         _discord.Log += Log;
         _interactions.Log += Log;
         await _interactions.AddModulesAsync(Assembly.GetEntryAssembly(), _scope.ServiceProvider);
@@ -56,9 +56,11 @@ internal class DiscordHost : IHostedService, IAsyncDisposable
     {
         _discord.InteractionCreated -= HandleInteractionAsync;
         _discord.Ready -= OnReady;
+        _discord.Connected -= OnConnected;
         _discord.Log -= Log;
         _interactions.Log -= Log;
         await _discord.LogoutAsync();
+        EndMaintenance();
     }
 
     private async Task MaintainAsync(CancellationToken cancellationToken)
@@ -149,11 +151,26 @@ internal class DiscordHost : IHostedService, IAsyncDisposable
         {
             await _interactions.RegisterCommandsGloballyAsync();
         }
-        _ = MaintainAsync(_stoppingToken);
+    }
+
+    private Task OnConnected()
+    {
+        EndMaintenance();
+        _maintenanceCts = new();
+        _ = MaintainAsync(_maintenanceCts.Token);
+        return Task.CompletedTask;
     }
 
     public ValueTask DisposeAsync()
     {
+        EndMaintenance();
         return _scope.DisposeAsync();
+    }
+
+    private void EndMaintenance()
+    {
+        _maintenanceCts?.Cancel();
+        _maintenanceCts?.Dispose();
+        _maintenanceCts = null;
     }
 }
