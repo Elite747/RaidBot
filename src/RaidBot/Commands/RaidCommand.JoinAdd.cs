@@ -108,6 +108,7 @@ public partial class RaidCommand
         IUser user,
         string? name)
     {
+        await db.Entry(raidContent).Collection(e => e.Members).LoadAsync();
         var existing = raidContent.Members.Find(m => m.OwnerId == user.Id);
         var ownerName = (user as IGuildUser)?.DisplayName ?? user.Username;
 

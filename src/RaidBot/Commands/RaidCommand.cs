@@ -167,9 +167,11 @@ public partial class RaidCommand(
 
         var sb = new StringBuilder();
 
+        var sortedMembers = members.OrderBy(m => m.Id is 0 ? int.MaxValue : m.Id).ToList();
+
         foreach (var role in roles)
         {
-            AddField(builder, sb, members, classes, role);
+            AddField(builder, sb, sortedMembers, classes, role);
         }
 
         return builder.Build();
@@ -194,10 +196,10 @@ public partial class RaidCommand(
 
     private static void AddField(EmbedBuilder builder, StringBuilder sb, List<RaidMember> members, Dictionary<int, PlayerClass> classes, PlayerRole role)
     {
-        var fieldName = $"{role.Icon} {role.Name} ({members.Count(m => m.RoleId == role.Id)})";
-        var roleMembers = members.Where(m => m.RoleId == role.Id);
+        var roleMembers = members.Where(m => m.RoleId == role.Id).ToList();
+        var fieldName = $"{role.Icon} {role.Name} ({roleMembers.Count})";
 
-        if (!roleMembers.Any())
+        if (roleMembers.Count == 0)
         {
             builder.AddField(fieldName, "none", inline: true);
             return;
