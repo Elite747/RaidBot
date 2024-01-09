@@ -1,18 +1,11 @@
-using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using RaidBot.Data;
-using RaidBot.Discord;
 using RaidBot.PeriodicTasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.Configure<DiscordConfigurationOptions>(builder.Configuration.GetSection("Discord"));
-builder.Services.AddSingleton(_ => new DiscordSocketClient());
-builder.Services.AddHostedService<DiscordHost>();
-
 builder.Services.AddDiscord(builder.Configuration);
-
 builder.Services.AddPeriodicTask<RemoveExpiredRaidsTask>();
 builder.Services.AddPeriodicTask<GuildExpansionTaskExecutor>();
 builder.Services.AddPeriodicGuildExpansionTask<UpdateRaidTitlesTask>();

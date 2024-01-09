@@ -1,4 +1,5 @@
 ﻿using System.Threading.Channels;
+using Discord.WebSocket;
 using RaidBot.Discord;
 using RaidBot.Discord.Tasks;
 using RaidBot.PeriodicTasks;
@@ -9,6 +10,7 @@ public static class DiscordServiceCollectionExtensions
 {
     public static IServiceCollection AddDiscord(this IServiceCollection services, IConfiguration configuration, string sectionName = "Discord")
     {
+        services.AddSingleton(_ => new DiscordSocketClient());
         services.Configure<DiscordConfigurationOptions>(configuration.GetSection(sectionName));
         services.AddTransient<IDiscordTaskQueue, DiscordTaskQueue>();
         services.AddSingleton<Channel<IDiscordTask>>(_ => Channel.CreateUnbounded<IDiscordTask>(new() { SingleReader = true }));
