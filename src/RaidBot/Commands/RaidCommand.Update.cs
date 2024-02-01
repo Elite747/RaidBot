@@ -61,6 +61,7 @@ public partial class RaidCommand
                     }
                 }
 
+                var raidDate = TimeZoneHelpers.ConvertTimeToLocal(raid.Date, raid.Configuration.Timezone, isUtc: true);
                 if (date.HasValue || time.HasValue)
                 {
                     DateTime dateTime;
@@ -72,12 +73,12 @@ public partial class RaidCommand
                         }
                         else
                         {
-                            dateTime = date.Value.ToDateTime(new TimeOnly(raid.Date.TimeOfDay.Ticks));
+                            dateTime = date.Value.ToDateTime(new TimeOnly(raidDate.TimeOfDay.Ticks));
                         }
                     }
                     else if (time.HasValue)
                     {
-                        dateTime = DateOnly.FromDateTime(raid.Date).ToDateTime(time.Value);
+                        dateTime = DateOnly.FromDateTime(raidDate.DateTime).ToDateTime(time.Value);
                     }
                     else
                     {
@@ -86,17 +87,17 @@ public partial class RaidCommand
 
                     raid.Date = TimeZoneHelpers.ConvertTimeToLocal(dateTime, raid.Configuration.Timezone, isUtc: false).UtcDateTime;
 
-                    if (raid.Date < DateTimeOffset.UtcNow)
+                    if (raidDate < DateTimeOffset.UtcNow)
                     {
                         await RespondSilentAsync("The date and time is in the past!");
                         return;
                     }
                 }
 
-                bool isToday = TimeZoneHelpers.ConvertTimeToLocal(DateTime.UtcNow, raid.Configuration.Timezone, isUtc: true).Date == raid.Date.Date;
+                bool isToday = TimeZoneHelpers.ConvertTimeToLocal(DateTime.UtcNow, raid.Configuration.Timezone, isUtc: true).Date == raidDate.Date;
 
                 await SaveAsync(db, Context.Channel, raid);
-                await ((ITextChannel)Context.Channel).ModifyAsync(channel => channel.Name = $"{(isToday ? "⭐" : "")}{raid.Date:MMM-dd}-{raid.Name.Replace(' ', '-')}");
+                await ((ITextChannel)Context.Channel).ModifyAsync(channel => channel.Name = $"{(isToday ? "⭐" : "")}{raidDate:MMM-dd}-{raid.Name.Replace(' ', '-')}");
                 await RespondSilentAsync("Raid updated.");
             }
             else
